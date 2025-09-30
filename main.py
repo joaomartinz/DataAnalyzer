@@ -86,8 +86,12 @@ if "df" in st.session_state:
 
     st.markdown("** Média, Mediana e Moda:**")
     if not df_filtrado.select_dtypes(include=np.number).empty:
-        moda_df = df_filtrado.mode(numeric_only=True)
-        moda = moda_df.iloc if not moda_df.empty else pd.Series(dtype=float)
+        moda = df_filtrado.mode(numeric_only=True)
+        if not moda.empty:
+            moda = moda.iloc[0]
+        else:
+            moda = pd.Series([np.nan] * len(df_filtrado.select_dtypes(include=np.number).columns),
+                             index=df_filtrado.select_dtypes(include=np.number).columns)
 
         stats = pd.DataFrame({
             "Média": df_filtrado.mean(numeric_only=True),
@@ -117,7 +121,7 @@ if "df" in st.session_state:
     for col in colunas_numericas:
         st.markdown(f"### 🔹 {col} (Numérica)")
 
-        # Histograma com boxplot junto
+        # Histograma
         hist = px.histogram(
             df_filtrado, 
             x=col, 
