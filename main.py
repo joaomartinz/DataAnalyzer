@@ -1,7 +1,9 @@
 import pandas as pd
 import streamlit as st
 import numpy as np
-import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 st.set_page_config(page_title="Data Analyzer", layout="wide")
 st.title("📊 Data Analyzer - Upload CSV/Excel")
@@ -120,60 +122,26 @@ if "df" in st.session_state:
     # Gráficos para colunas numéricas
     for col in colunas_numericas:
         st.markdown(f"### 🔹 {col} (Numérica)")
-
-        # Histograma
-        hist = px.histogram(
-            df_filtrado, 
-            x=col, 
-            nbins=30, 
-            marginal="box",  
-            title=f"Distribuição de {col}",
-            color_discrete_sequence=["#1f77b4"]
-        )
-        hist.update_layout(xaxis_title=col, yaxis_title="Frequência", bargap=0.1)
-        st.plotly_chart(hist, use_container_width=True)
-
-
+        fig, ax = plt.subplots(figsize=(4, 2))
+        sns.histplot(df[col], kde=True, ax=ax)
+        plt.title(f"Distribuição de {col}")
+        ax.set_title(plt.gcf())
+        st.pyplot(fig, width="content")
+       
+        
     # Gráficos para colunas categóricas
     for col in colunas_categoricas:
         st.markdown(f"### 🔹 {col} (Categórica)")
-
-        val_counts = df_filtrado[col].value_counts().reset_index()
-        val_counts.columns = [col, "Contagem"]
-
-        bar = px.bar(
-            val_counts.sort_values("Contagem", ascending=False),
-            x=col, 
-            y="Contagem", 
-            title=f"Distribuição de {col}",
-            text="Contagem", 
-            color="Contagem",
-            color_continuous_scale="Blues"
-        )
-        bar.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(bar, use_container_width=True)
-
-    # Heatmap de correlação
-    if len(colunas_numericas) > 1:
-        st.markdown("### 🔹 Correlação entre Variáveis Numéricas")
-        corr = df_filtrado.corr(numeric_only=True)
-        heatmap = px.imshow(
-            corr, 
-            text_auto=True, 
-            color_continuous_scale="RdBu_r", 
-            title="Mapa de Correlação"
-        )
-        st.plotly_chart(heatmap, use_container_width=True)
+        fig, ax = plt.subplots(figsize=(4,2))
+        df[col].value_counts().plot(kind="bar")
+        plt.title(f"Frequência de {col}")
+        ax.set_title(plt.gcf())
+        st.pyplot(fig, width="content")
 
     # ---------- EXPORTAÇÃO ----------
     st.subheader("📂 Exportar Dados")
     csv = df_filtrado.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Baixar CSV", data=csv, file_name="dados_filtrados.csv", mime="text/csv")
-
-
-
-
-
 
 
 
